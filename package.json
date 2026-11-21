@@ -1,6 +1,6 @@
 {
   "name": "lockship",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Security guardrail and rule-syncer for AI-assisted (vibe-coded) projects",
   "keywords": ["security", "git-hooks", "ai", "vibe-coding", "cli", "secrets"],
   "homepage": "https://github.com/rehan-1002/lockship-",
