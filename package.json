@@ -7,7 +7,7 @@
   "bugs": "https://github.com/rehan-1002/lockship-/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rehan-1002/lockship-.git"
+    "url": "git+https://github.com/rehan-1002/lockship-.git"
   },
   "license": "MIT",
   "author": "Rehan Ansari",
