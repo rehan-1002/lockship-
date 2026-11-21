@@ -15,19 +15,51 @@ const SECRET_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
   { name: 'Generic secret', pattern: /(?:secret|password|passwd|pwd)\s*[:=]\s*['"`]([A-Za-z0-9_\-!@#$%^&*]{8,})['"`]/i },
 ]
 
-const SKIP_EXTENSIONS = new Set(['.png','.jpg','.jpeg','.gif','.svg','.ico','.woff','.woff2','.ttf','.eot','.mp4','.mp3','.pdf','.zip'])
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', '.next', 'build', 'coverage'])
+const SKIP_EXTENSIONS = new Set([
+  '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico',
+  '.woff', '.woff2', '.ttf', '.eot',
+  '.mp4', '.mp3', '.pdf', '.zip', '.tar', '.gz', '.tgz',
+  '.wasm', '.bin', '.exe', '.dll', '.so', '.dylib',
+  '.map', '.min.js', '.min.css',
+])
+
+const SKIP_FILES = new Set([
+  'package-lock.json',
+  'pnpm-lock.yaml',
+  'yarn.lock',
+  'bun.lockb',
+])
+
+const SKIP_DIRS = new Set([
+  'node_modules', '.git', 'dist', '.next', 'build', 'coverage', '.turbo', '.output'
+])
+
+// Maximum file size to scan (1MB) to prevent OOM on giant dumps/logs
+const MAX_FILE_SIZE = 1024 * 1024
+
+const PLACEHOLDER_PATTERN = /(?:your[_-]api[_-]key|your[_-]secret|your[_-]token|placeholder|dummy|example[_-]|replace[_-]this)/i
 
 export async function scanSecrets(): Promise<Issue[]> {
   const files = await getTrackedFiles()
   const issues: Issue[] = []
 
   for (const file of files) {
+    const filename = path.basename(file)
     const ext = path.extname(file).toLowerCase()
     const parts = file.split(/[\\/]/)
+
+    if (SKIP_FILES.has(filename)) continue
     if (SKIP_EXTENSIONS.has(ext)) continue
+    if (filename.endsWith('.min.js') || filename.endsWith('.min.css')) continue
     if (parts.some(p => SKIP_DIRS.has(p))) continue
     if (file === '.env' || file.endsWith('.env')) continue
+
+    try {
+      const stat = await fs.stat(file)
+      if (stat.size > MAX_FILE_SIZE) continue
+    } catch {
+      continue
+    }
 
     let content: string
     try {
@@ -39,6 +71,10 @@ export async function scanSecrets(): Promise<Issue[]> {
     const lines = content.split('\n')
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
+
+      // Skip obvious placeholders / examples
+      if (PLACEHOLDER_PATTERN.test(line)) continue
+
       for (const { name, pattern } of SECRET_PATTERNS) {
         if (pattern.test(line)) {
           issues.push({

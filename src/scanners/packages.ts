@@ -20,9 +20,31 @@ export async function scanPackages(): Promise<Issue[]> {
     ...pkgJson.devDependencies,
   }
 
-  const checks = Object.keys(allDeps).map(async (pkg) => {
+  const checks = Object.entries(allDeps).map(async ([pkg, version]) => {
+    // Ignore local, workspace, or VCS dependencies
+    if (typeof version === 'string') {
+      const v = version.trim().toLowerCase()
+      if (
+        v.startsWith('workspace:') ||
+        v.startsWith('file:') ||
+        v.startsWith('link:') ||
+        v.startsWith('portal:') ||
+        v.startsWith('git:') ||
+        v.startsWith('git+') ||
+        v.startsWith('http:') ||
+        v.startsWith('https:')
+      ) {
+        return
+      }
+    }
+
+    // Scoped packages like @clack/prompts -> @clack%2Fprompts
+    const encodedPkg = pkg.startsWith('@')
+      ? pkg.replace('/', '%2F')
+      : encodeURIComponent(pkg)
+
     try {
-      const res = await fetch(`https://registry.npmjs.org/${pkg}/latest`, {
+      const res = await fetch(`https://registry.npmjs.org/${encodedPkg}/latest`, {
         signal: AbortSignal.timeout(5000),
       })
       if (res.status === 404) {
@@ -34,7 +56,7 @@ export async function scanPackages(): Promise<Issue[]> {
         })
       }
     } catch {
-      // network error — skip, don't false-positive
+      // network error or offline — skip, don't false-positive
     }
   })
 

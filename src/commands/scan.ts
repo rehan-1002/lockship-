@@ -28,8 +28,12 @@ export async function scan(opts: ScanOptions = {}) {
   console.log(pc.red(`\n🔴 Lockship found ${issues.length} issue${issues.length > 1 ? 's' : ''}:\n`))
   issues.forEach((issue, i) => printIssue(issue, i + 1))
 
-  if (!opts.interactive) {
-    p.outro(pc.yellow('Run with --interactive to auto-fix issues.'))
+  if (!opts.interactive || !process.stdin.isTTY) {
+    if (!process.stdin.isTTY) {
+      p.outro(pc.yellow('Non-interactive terminal detected — push blocked until issues are resolved.'))
+    } else {
+      p.outro(pc.yellow('Run with --interactive to auto-fix issues.'))
+    }
     process.exitCode = 1
     return { passed: false, issues }
   }

@@ -18,10 +18,12 @@ export async function installGitHook(): Promise<void> {
     await fs.mkdir(hooksDir, { recursive: true })
     await fs.writeFile(hookPath, hookContent, 'utf8')
     // Make it executable on Unix/Mac
-    try {
-      execSync(`chmod +x "${hookPath}"`)
-    } catch {
-      // Windows — chmod not needed
+    if (process.platform !== 'win32') {
+      try {
+        execSync(`chmod +x "${hookPath}"`)
+      } catch {
+        // ignore if not supported
+      }
     }
   } catch (err) {
     throw new Error(`Failed to install git hook: ${err}`)

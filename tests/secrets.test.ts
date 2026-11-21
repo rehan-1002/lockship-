@@ -42,4 +42,11 @@ describe('Secret Pattern Detection', () => {
     const match = SECRET_PATTERNS.find(p => p.pattern.test(cleanLine))
     expect(match).toBeUndefined()
   })
+
+  it('recognizes placeholder keywords to prevent false alarms', () => {
+    const placeholderPattern = /(?:your[_-]api[_-]key|your[_-]secret|your[_-]token|placeholder|dummy|example[_-]|replace[_-]this)/i
+    expect(placeholderPattern.test('const apiKey = "YOUR_API_KEY_HERE"')).toBe(true)
+    expect(placeholderPattern.test('const token = "dummy-token-for-test"')).toBe(true)
+    expect(placeholderPattern.test('const secret = "replace_this_with_your_key"')).toBe(true)
+  })
 })
