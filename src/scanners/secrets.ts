@@ -3,16 +3,16 @@ import path from 'node:path'
 import { getTrackedFiles } from '../utils/git.js'
 import type { Issue } from '../types.js'
 
-// Common secret patterns with their names
+// Specific vendor patterns first, generic fallback at the end
 const SECRET_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
+  { name: 'OpenAI API key', pattern: /sk-[A-Za-z0-9]{20,}/ },
+  { name: 'Stripe secret key', pattern: /sk_(?:live|test)_[A-Za-z0-9]{24,}/ },
+  { name: 'GitHub token', pattern: /gh[ps]_[A-Za-z0-9]{36}/ },
+  { name: 'AWS access key', pattern: /AKIA[0-9A-Z]{16}/ },
+  { name: 'Supabase anon/service key', pattern: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_\-]{10,}/ },
+  { name: 'Bearer token', pattern: /bearer\s+['"`]?([A-Za-z0-9\-._~+/]{20,})['"`]?/i },
   { name: 'Generic API key', pattern: /(?:api[_-]?key|apikey)\s*[:=]\s*['"`]([A-Za-z0-9_\-]{20,})['"`]/i },
   { name: 'Generic secret', pattern: /(?:secret|password|passwd|pwd)\s*[:=]\s*['"`]([A-Za-z0-9_\-!@#$%^&*]{8,})['"`]/i },
-  { name: 'Bearer token', pattern: /bearer\s+['"`]?([A-Za-z0-9\-._~+/]{20,})['"`]?/i },
-  { name: 'Supabase anon/service key', pattern: /eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_\-]{10,}/},
-  { name: 'OpenAI API key', pattern: /sk-[A-Za-z0-9]{20,}/ },
-  { name: 'GitHub token', pattern: /gh[ps]_[A-Za-z0-9]{36}/ },
-  { name: 'Stripe secret key', pattern: /sk_(?:live|test)_[A-Za-z0-9]{24,}/ },
-  { name: 'AWS access key', pattern: /AKIA[0-9A-Z]{16}/ },
 ]
 
 const SKIP_EXTENSIONS = new Set(['.png','.jpg','.jpeg','.gif','.svg','.ico','.woff','.woff2','.ttf','.eot','.mp4','.mp3','.pdf','.zip'])
