@@ -1,0 +1,43 @@
+{
+  "name": "lockship",
+  "version": "0.1.0",
+  "description": "Security guardrail and rule-syncer for AI-assisted (vibe-coded) projects",
+  "keywords": ["security", "git-hooks", "ai", "vibe-coding", "cli", "secrets"],
+  "homepage": "https://github.com/rehan-1002/lockship-",
+  "bugs": "https://github.com/rehan-1002/lockship-/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rehan-1002/lockship-.git"
+  },
+  "license": "MIT",
+  "author": "Rehan Ansari",
+  "type": "module",
+  "bin": {
+    "lockship": "./dist/index.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.1",
+    "commander": "^12.1.0",
+    "js-yaml": "^4.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
